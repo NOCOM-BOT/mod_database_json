@@ -1,0 +1,6 @@
+{
+    "type": "package",
+    "namespace": "db_json",
+    "communicationProtocol": "node_worker",
+    "autoRestart": true
+}
