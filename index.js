@@ -9,11 +9,25 @@ Node module: @nocom_bot/mod_database_json
 */
 
 import worker, { parentPort } from "node:worker_threads";
+import { promises as fsPromises } from "node:fs";
 
 let instanceID = "unknown";
 if (worker.isMainThread) {
     console.log("This module must be run using NOCOM_BOT core's module loader.");
     process.exit(1);
+}
+
+let databaseList = {};
+class JSONDatabase {
+    jsonLocation = "";
+    dbName = "";
+
+    constructor(jsonLocation, name) {
+        this.jsonLocation = jsonLocation;
+        this.dbName = name;
+    }
+
+
 }
 
 parentPort.once("message", (data) => {
@@ -36,7 +50,7 @@ parentPort.once("message", (data) => {
 async function portCallback(data) {
     if (data.type === "api_call") {
         try {
-            let response = await handleAPICall(data.data);
+            let response = await handleAPICall(data.call_cmd, data.data);
 
             if (response.exist) {
                 parentPort.postMessage({
@@ -68,6 +82,29 @@ async function portCallback(data) {
     }
 }
 
-async function handleAPICall(data) {
-    throw "Not implemented yet.";
+async function handleAPICall(cmd, data) {
+    switch (cmd) {
+        case "default_cfg":
+            return {
+                exist: true,
+                data: {
+                    file: "database_default.json"
+                }
+            }
+        case "list_db":
+            return {
+                exist: true,
+                data: Object.entries(databaseList).map(x => ({
+                    databaseID: +x[0],
+                    databaseName: x[1].dbName
+                }))
+            }
+        case "connect_db":
+            if (databaseList[data.databaseID]) throw "Database ID exists!";
+            throw "Not implemented";
+        default:
+            return {
+                exist: false
+            }
+    }
 }
