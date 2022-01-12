@@ -1,7 +1,7 @@
 {
   "name": "@nocom_bot/mod_database_json",
   "version": "0.0.1",
-  "description": "v1 Spec-complaint JSON database module for NOCOM_BOT",
+  "description": "v1 Spec-compliant JSON database module for NOCOM_BOT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
