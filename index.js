@@ -142,7 +142,7 @@ async function portCallback(data) {
             }
         case "challenge":
             parentPort.postMessage({
-                type: "challenge",
+                type: "challenge_response",
                 challenge: data.challenge
             });
     }

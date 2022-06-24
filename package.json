@@ -1,6 +1,6 @@
 {
   "name": "@nocom_bot/mod_database_json",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "v1 Spec-compliant JSON database module for NOCOM_BOT",
   "main": "index.js",
   "scripts": {
