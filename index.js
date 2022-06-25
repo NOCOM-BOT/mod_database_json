@@ -21,23 +21,20 @@ if (worker.isMainThread) {
 let databaseList = {};
 class JSONDatabase {
     jsonLocation = "";
-    dbName = "";
     #data = {};
     #lastRefresh = 0;
     saveClock;
     saving = false;
 
-    constructor(jsonLocation, name) {
+    constructor(jsonLocation) {
         this.jsonLocation = jsonLocation;
-        this.dbName = name;
-
         this.saveClock = setInterval(async () => {
             if (!this.saving) {
                 this.saving = true;
                 await this.save();
                 this.saving = false;
             }
-        })
+        }, 10000);
     }
 
     async refresh() {
@@ -161,8 +158,7 @@ async function handleAPICall(cmd, data) {
             return {
                 exist: true,
                 data: Object.entries(databaseList).map(x => ({
-                    databaseID: +x[0],
-                    databaseName: x[1].dbName
+                    databaseID: +x[0]
                 }))
             }
         case "connect_db":
