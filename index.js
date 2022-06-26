@@ -9,8 +9,10 @@ Node module: @nocom_bot/mod_database_json
 */
 
 import { JsonDB } from "node-json-db";
+import { join } from "node:path";
 
 let instanceID = "unknown";
+let rDataPath, dataPath = new Promise(resolve => rDataPath = resolve);
 
 /** @type {{[id: number]: JSONDatabase}} */
 let databaseList = {};
@@ -58,6 +60,14 @@ process.once("message", (data) => {
             module_namespace: "db_json"
         });
 
+        process.send({
+            type: "api_send",
+            call_cmd: "get_data_folder",
+            call_to: "core",
+            data: null,
+            nonce: "DBJS0"
+        });
+
         process.on("message", portCallback);
     } else {
         process.exit(1);
@@ -97,11 +107,18 @@ async function portCallback(data) {
                     nonce: data.nonce
                 });
             }
+            break;
         case "challenge":
             process.send({
                 type: "challenge_response",
                 challenge: data.challenge
             });
+            break;
+        case "api_response":
+            if (data.nonce === "DBJS0") {
+                rDataPath(data.data);
+            }
+            break;
     }
 }
 
@@ -123,7 +140,7 @@ async function handleAPICall(cmd, data) {
             }
         case "connect_db":
             if (databaseList[data.databaseID]) throw "Database ID exists!";
-            databaseList[data.databaseID] = new JSONDatabase(data.params.file, data.databaseName);
+            databaseList[data.databaseID] = new JSONDatabase(join(await dataPath, data.params.file));
             return {
                 exist: true,
                 data: {
