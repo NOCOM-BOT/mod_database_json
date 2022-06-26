@@ -12,10 +12,6 @@ import { JsonDB } from "node-json-db";
 import { Config as JsonDBConfig } from 'node-json-db/dist/lib/JsonDBConfig'
 
 let instanceID = "unknown";
-if (worker.isMainThread) {
-    console.log("This module must be run using NOCOM_BOT core's module loader.");
-    process.exit(1);
-}
 
 /** @type {{[id: number]: JSONDatabase}} */
 let databaseList = {};
