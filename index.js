@@ -71,7 +71,7 @@ async function portCallback(data) {
                 let response = await handleAPICall(data.call_cmd, data.data);
 
                 if (response.exist) {
-                    parentPort.postMessage({
+                    process.postMessage({
                         type: "api_sendresponse",
                         response_to: data.call_from,
                         exist: true,
@@ -80,7 +80,7 @@ async function portCallback(data) {
                         nonce: data.nonce
                     });
                 } else {
-                    parentPort.postMessage({
+                    process.postMessage({
                         type: "api_sendresponse",
                         response_to: data.call_from,
                         exist: false,
@@ -88,7 +88,7 @@ async function portCallback(data) {
                     });
                 }
             } catch (e) {
-                parentPort.postMessage({
+                process.postMessage({
                     type: "api_sendresponse",
                     response_to: data.call_from,
                     exist: true,
@@ -98,7 +98,7 @@ async function portCallback(data) {
                 });
             }
         case "challenge":
-            parentPort.postMessage({
+            process.postMessage({
                 type: "challenge_response",
                 challenge: data.challenge
             });
