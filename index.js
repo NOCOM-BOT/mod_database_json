@@ -9,7 +9,8 @@ Node module: @nocom_bot/mod_database_json
 */
 
 import worker, { parentPort } from "node:worker_threads";
-import { promises as fsPromises } from "node:fs";
+import { JsonDB } from "node-json-db";
+import { Config as JsonDBConfig } from 'node-json-db/dist/lib/JsonDBConfig'
 
 let instanceID = "unknown";
 if (worker.isMainThread) {
@@ -21,69 +22,34 @@ if (worker.isMainThread) {
 let databaseList = {};
 class JSONDatabase {
     jsonLocation = "";
-    #data = {};
-    #lastRefresh = 0;
+    #database;
     saveClock;
     saving = false;
 
     constructor(jsonLocation) {
         this.jsonLocation = jsonLocation;
-        this.saveClock = setInterval(async () => {
-            if (!this.saving) {
-                this.saving = true;
-                await this.save();
-                this.saving = false;
-            }
-        }, 10000);
+        this.#database = new JsonDB(new JsonDBConfig(this.jsonLocation, true, false, "/"));
     }
 
-    async refresh() {
-        if (this.#lastRefresh + 15000 <= Date.now()) {
-            let jsonData = JSON.parse(await fsPromises.readFile(this.jsonLocation));
-            this.#data = jsonData;
-        }
+    getData(table, key) {
+        return this.#database.getData(`/${table}/${key}`);
     }
 
-    async save() {
-        await fsPromises.writeFile(JSON.stringify(this.#data, null, "\t"));
+    setData(table, key, value) {
+        this.#database.push(`/${table}/${key}`, value);
     }
 
-    async getData(table, key) {
-        await this.refresh();
-        if (!Object.hasOwn(this.#data, table)) {
-            this.#data[table] = {};
-        }
-
-        return this.#data[table][key];
+    deleteData(table, key) {
+        this.#database.delete(`/${table}/${key}`);
     }
 
-    async setData(table, key, value) {
-        await this.refresh();
-        if (!Object.hasOwn(this.#data, table)) {
-            this.#data[table] = {};
-        }
-
-        this.#data[table][key] = value;
-    }
-
-    async deleteData(table, key) {
-        await this.refresh();
-
-        if (!Object.hasOwn(this.#data, table)) {
-            this.#data[table] = {};
-        }
-
-        delete this.#data[table][key];
-    }
-
-    async deleteTable(table) {
-        await this.refresh();
-
-        delete this.#data[table];
+    deleteTable(table) {
+        this.#database.delete(`/${table}`);
     }
 
     disconnect() {
-        clearInterval(this.saveClock);
+        this.#database.save();
+        this.#database = null;
     }
 }
 
@@ -193,7 +159,7 @@ async function handleAPICall(cmd, data) {
         case "set_data":
             if (!(databaseList[data.databaseID] instanceof JSONDatabase)) throw "Database ID not found.";
             try {
-                await databaseList[data.databaseID].setData(data.table, data.key, data.value);
+                databaseList[data.databaseID].setData(data.table, data.key, data.value);
                 return {
                     exist: true,
                     data: {
@@ -210,7 +176,7 @@ async function handleAPICall(cmd, data) {
             }
         case "delete_data":
             if (!(databaseList[data.databaseID] instanceof JSONDatabase)) throw "Database ID not found.";
-            await databaseList[data.databaseID].deleteData(data.table, data.key);
+            databaseList[data.databaseID].deleteData(data.table, data.key);
             return {
                 exist: true,
                 data: {
@@ -219,7 +185,7 @@ async function handleAPICall(cmd, data) {
             }
         case "delete_table":
             if (!(databaseList[data.databaseID] instanceof JSONDatabase)) throw "Database ID not found.";
-            await databaseList[data.databaseID].deleteTable(data.table);
+            databaseList[data.databaseID].deleteTable(data.table);
             return {
                 exist: true,
                 data: {

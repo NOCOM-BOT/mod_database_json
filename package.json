@@ -23,5 +23,8 @@
     "url": "https://github.com/NOCOM-BOT/mod_database_json/issues"
   },
   "homepage": "https://github.com/NOCOM-BOT/mod_database_json#readme",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "node-json-db": "^1.5.0"
+  }
 }
