@@ -9,7 +9,6 @@ Node module: @nocom_bot/mod_database_json
 */
 
 import { JsonDB } from "node-json-db";
-import { Config as JsonDBConfig } from 'node-json-db/dist/lib/JsonDBConfig'
 
 let instanceID = "unknown";
 
@@ -23,7 +22,7 @@ class JSONDatabase {
 
     constructor(jsonLocation) {
         this.jsonLocation = jsonLocation;
-        this.#database = new JsonDB(new JsonDBConfig(this.jsonLocation, true, false, "/"));
+        this.#database = new JsonDB(this.jsonLocation, true, false, "/");
     }
 
     getData(table, key) {
