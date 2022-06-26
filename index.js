@@ -8,7 +8,6 @@ available at https://opensource.org/licenses/MIT
 Node module: @nocom_bot/mod_database_json
 */
 
-import worker, { parentPort } from "node:worker_threads";
 import { JsonDB } from "node-json-db";
 import { Config as JsonDBConfig } from 'node-json-db/dist/lib/JsonDBConfig'
 
@@ -53,18 +52,18 @@ class JSONDatabase {
     }
 }
 
-parentPort.once("message", (data) => {
+process.once("message", (data) => {
     if (data.type === "handshake") {
         instanceID = data.id;
 
-        parentPort.postMessage({
+        process.send({
             type: "handshake_success",
             module: "database",
             module_displayname: "JSON database",
             module_namespace: "db_json"
         });
 
-        parentPort.on("message", portCallback);
+        process.on("message", portCallback);
     } else {
         process.exit(1);
     }
