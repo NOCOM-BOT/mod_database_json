@@ -8,7 +8,7 @@ available at https://opensource.org/licenses/MIT
 Node module: @nocom_bot/mod_database_json
 */
 
-import { JsonDB } from "node-json-db";
+import { JsonDB, Config } from "node-json-db";
 import { join } from "node:path";
 
 let instanceID = "unknown";
@@ -19,32 +19,36 @@ let databaseList = {};
 class JSONDatabase {
     jsonLocation = "";
     #database;
-    saveClock;
     saving = false;
 
     constructor(jsonLocation) {
         this.jsonLocation = jsonLocation;
-        this.#database = new JsonDB(this.jsonLocation, true, false, "/");
+        this.#database = new JsonDB(new Config(this.jsonLocation, true, false, "/"));
     }
 
-    getData(table, key) {
-        return this.#database.getData(`/${table}/${key}`);
+    async getData(table, key) {
+        try {
+            return this.#database.getData(`/${table}/${key}`);
+        } catch {
+            await this.#database.push(`/${table}`, {});
+            return void 0;
+        }
     }
 
     setData(table, key, value) {
-        this.#database.push(`/${table}/${key}`, value);
+        return this.#database.push(`/${table}/${key}`, value);
     }
 
     deleteData(table, key) {
-        this.#database.delete(`/${table}/${key}`);
+        return this.#database.delete(`/${table}/${key}`);
     }
 
     deleteTable(table) {
-        this.#database.delete(`/${table}`);
+        return this.#database.delete(`/${table}`);
     }
 
-    disconnect() {
-        this.#database.save();
+    async disconnect() {
+        await this.#database.save();
         this.#database = null;
     }
 }
@@ -155,7 +159,7 @@ async function handleAPICall(cmd, data) {
                     exist: true,
                     data: {
                         success: true,
-                        data: databaseList[data.databaseID].getData(data.table, data.key)
+                        data: await databaseList[data.databaseID].getData(data.table, data.key)
                     }
                 }
             } catch {
